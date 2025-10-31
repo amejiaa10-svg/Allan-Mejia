@@ -39,14 +39,14 @@
     .file-item .preview { position: absolute; top: 100%; left: 0; background: #1e1e1e; border: 1px solid #444; border-radius: 4px; padding: 5px; display: none; z-index: 10; max-width: 200px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
     .file-item:hover .preview { display: block; }
 
-    /* HEADER: ELIMINAR MÁS A LA IZQUIERDA (sin traslape) */
+    /* HEADER: ELIMINAR MÁS A LA IZQUIERDA */
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
       position: relative;
-      padding-right: 100px; /* Espacio para "Cerrar" */
+      padding-right: 100px;
     }
     .delete-btn {
       padding: 6px 12px;
@@ -170,17 +170,35 @@
     <div class="max-w-6xl mx-auto px-4">
       <h2 class="text-3xl font-bold mb-10 text-center">Trabajos</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Proyecto 1 -->
         <div class="bg-gray-700 rounded-lg p-6">
           <h3 class="text-xl font-semibold">Proyecto 1</h3>
           <a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="1">Ver Proyecto</a>
         </div>
+        <!-- Proyecto 2 -->
         <div class="bg-gray-700 rounded-lg p-6">
           <h3 class="text-xl font-semibold">Proyecto 2</h3>
           <a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="2">Ver Proyecto</a>
         </div>
+        <!-- Proyecto 3 -->
         <div class="bg-gray-700 rounded-lg p-6">
           <h3 class="text-xl font-semibold">Proyecto 3</h3>
           <a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="3">Ver Proyecto</a>
+        </div>
+        <!-- Proyecto 4 -->
+        <div class="bg-gray-700 rounded-lg p-6">
+          <h3 class="text-xl font-semibold">Proyecto 4</h3>
+          <a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="4">Ver Proyecto</a>
+        </div>
+        <!-- Proyecto 5 -->
+        <div class="bg-gray-700 rounded-lg p-6">
+          <h3 class="text-xl font-semibold">Proyecto 5</h3>
+          <a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="5">Ver Proyecto</a>
+        </div>
+        <!-- Proyecto 6 -->
+        <div class="bg-gray-700 rounded-lg p-6">
+          <h3 class="text-xl font-semibold">Proyecto 6</h3>
+          <a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="6">Ver Proyecto</a>
         </div>
       </div>
     </div>
@@ -327,7 +345,7 @@
 
     function base64ToBlob(base64, type) {
       const bytes = atob(base64);
-      const array = new UintArray(bytes.length);
+      const array = new Uint8Array(bytes.length);
       for (let i = 0; i < bytes.length; i++) array[i] = bytes.charCodeAt(i);
       return new Blob([array], { type });
     }
@@ -496,6 +514,7 @@
       if (e.target === imageViewer) imageViewer.style.display = "none";
     });
 
+    // === ABRIR CUALQUIER PROYECTO (1 a 6) ===
     document.querySelectorAll(".ver-proyecto").forEach(link => {
       link.addEventListener("click", e => {
         e.preventDefault();
