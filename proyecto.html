@@ -15,23 +15,25 @@
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; }
     .modal-content { background-color: #2d2d2d; width: 100%; height: 100%; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; position: relative; }
 
-    /* X 100% FUNCIONAL */
-    .close {
-      color: #fff;
-      font-size: 28px;
+    /* BOTÓN CERRAR ESTILIZADO */
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background-color: #e24a4a;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
       font-weight: bold;
       cursor: pointer;
-      position: absolute;
-      top: 10px;
-      right: 20px;
-      user-select: none;
-      display: inline-block;
       transition: all 0.2s ease;
       z-index: 1001;
+      font-size: 1rem;
     }
-    .close:hover {
-      color: #ff0000;
-      transform: scale(1.1);
+    .close-btn:hover {
+      background-color: #b33d3d;
+      transform: scale(1.05);
     }
 
     .file-explorer { background-color: #1e1e1e; border: 1px solid #444; border-radius: 4px; padding: 10px; flex-grow: 1; overflow-y: auto; margin-bottom: 20px; }
@@ -52,7 +54,7 @@
     .confirmation-dialog .cancel-btn { background-color: #666; color: white; }
     .confirmation-dialog .cancel-btn:hover { background-color: #555; }
 
-    /* VISOR DE CÓDIGO MEJORADO */
+    /* VISOR DE CÓDIGO E IMAGEN */
     .code-viewer, .image-viewer {
       display: none;
       position: fixed;
@@ -81,15 +83,6 @@
       font-size: 1.2rem;
       color: #00ffcc;
       font-weight: bold;
-    }
-    .code-viewer-close, .image-viewer-close {
-      cursor: pointer;
-      font-size: 1.8rem;
-      color: #aaa;
-      transition: color 0.2s;
-    }
-    .code-viewer-close:hover, .image-viewer-close:hover {
-      color: #ff0000;
     }
     .code-viewer-content {
       flex-grow: 1;
@@ -197,7 +190,7 @@
   <!-- MODAL -->
   <div id="proyectos-modal" class="modal">
     <div class="modal-content">
-      <span class="close">X</span>
+      <button class="close-btn">Cerrar</button>
       <div class="header">
         <h2 id="project-title" class="text-2xl font-bold mb-4"></h2>
         <div>
@@ -227,7 +220,7 @@
   <div id="code-viewer" class="code-viewer">
     <div class="code-viewer-header">
       <h3 id="code-filename">archivo.cpp</h3>
-      <span class="code-viewer-close">X</span>
+      <button class="close-btn">Cerrar</button>
     </div>
     <div class="code-viewer-content">
       <pre><code id="code-content" class="language-cpp"></code></pre>
@@ -238,7 +231,7 @@
   <div id="image-viewer" class="image-viewer">
     <div class="image-viewer-header">
       <h3 id="image-filename">imagen.png</h3>
-      <span class="image-viewer-close">X</span>
+      <button class="close-btn">Cerrar</button>
     </div>
     <div class="image-viewer-content">
       <img id="image-preview" src="" alt="Vista previa">
@@ -251,7 +244,7 @@
   <script>
     // === ELEMENTOS ===
     const modal = document.getElementById("proyectos-modal");
-    const closeBtn = document.querySelector("#proyectos-modal .close");
+    const modalCloseBtn = document.querySelector("#proyectos-modal .close-btn");
     const projectTitle = document.getElementById("project-title");
     const fileExplorer = document.querySelector(".file-explorer");
     const uploadArea = document.getElementById("upload-area");
@@ -265,8 +258,8 @@
 
     const codeViewer = document.getElementById("code-viewer");
     const imageViewer = document.getElementById("image-viewer");
-    const codeClose = document.querySelector(".code-viewer-close");
-    const imageClose = document.querySelector(".image-viewer-close");
+    const codeCloseBtn = document.querySelector("#code-viewer .close-btn");
+    const imageCloseBtn = document.querySelector("#image-viewer .close-btn");
 
     let selectedFile = null;
     let selectedFileData = null;
@@ -293,13 +286,16 @@
     const codeExtensions = ['.cpp', '.h', '.c', '.py', '.js', '.java', '.html', '.css', '.php', '.rb', '.go', '.ts', '.cs', '.swift', '.kt', '.rs', '.sh', '.json', '.xml', '.yaml', '.yml', '.md', '.txt'];
     const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
 
-    // === X CIERRA EL MODAL ===
-    if (closeBtn) {
-      closeBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        modal.style.display = "none";
-      });
-    }
+    // === CERRAR MODALES CON BOTÓN "CERRAR" ===
+    modalCloseBtn.addEventListener("click", () => {
+      modal.style.display = "none";
+    });
+    codeCloseBtn.addEventListener("click", () => {
+      codeViewer.style.display = "none";
+    });
+    imageCloseBtn.addEventListener("click", () => {
+      imageViewer.style.display = "none";
+    });
 
     // === IndexedDB ===
     function initDB() {
@@ -335,7 +331,6 @@
       return fileIcons[ext] || fileIcons.default;
     }
 
-    // === VISOR DE CÓDIGO MEJORADO ===
     function showCode(file) {
       const blob = base64ToBlob(file.content, file.type);
       const reader = new FileReader();
@@ -358,7 +353,7 @@
         codeEl.textContent = text;
 
         codeViewer.style.display = 'flex';
-        setTimeout(() => Prism.highlightAll(), 10); // Forzar resaltado
+        setTimeout(() => Prism.highlightAll(), 10);
       };
       reader.readAsText(blob);
     }
@@ -370,7 +365,6 @@
       imageViewer.style.display = 'flex';
     }
 
-    // === CARGAR ARCHIVOS GUARDADOS ===
     async function loadSavedData(projectNumber) {
       return new Promise((resolve, reject) => {
         fileExplorer.innerHTML = '';
@@ -386,7 +380,6 @@
             el.className = "file-item";
             el.innerHTML = `<i class="${info.icon}" style="color:${info.color}"></i><span>${file.name}</span>`;
             
-            // Preview de imagen
             if (imageExtensions.includes(ext)) {
               const preview = document.createElement("div");
               preview.className = "preview";
@@ -397,7 +390,6 @@
               el.appendChild(preview);
             }
 
-            // Seleccionar archivo
             el.addEventListener("click", (e) => {
               e.stopPropagation();
               if (selectedFile) selectedFile.classList.remove("selected");
@@ -406,14 +398,10 @@
               selectedFile.classList.add("selected");
             });
 
-            // DOBLE CLIC → ABRIR VISOR
             el.addEventListener("dblclick", (e) => {
               e.stopPropagation();
-              if (codeExtensions.includes(ext)) {
-                showCode(file);
-              } else if (imageExtensions.includes(ext)) {
-                showImage(file);
-              }
+              if (codeExtensions.includes(ext)) showCode(file);
+              else if (imageExtensions.includes(ext)) showImage(file);
             });
 
             fileExplorer.appendChild(el);
@@ -424,7 +412,6 @@
       });
     }
 
-    // === DRAG & DROP ===
     ['dragenter', 'dragover'].forEach(event => {
       uploadArea.addEventListener(event, e => { e.preventDefault(); e.stopPropagation(); uploadArea.classList.add('dragover'); });
     });
@@ -446,7 +433,6 @@
       }
     });
 
-    // === GUARDAR ARCHIVOS ===
     saveBtn.addEventListener('click', async () => {
       if (pendingFiles.length === 0) return alert("Selecciona archivos primero.");
       const fileObjs = await Promise.all(pendingFiles.map(async f => ({
@@ -456,7 +442,7 @@
       await loadSavedData(currentProject);
       pendingFiles = [];
       uploadArea.innerHTML = `<p>Arrastra archivos aquí o haz clic para seleccionar</p>`;
-      alert(`¡${fileObjs.length} archivo(s) guardados!`);
+      alert(`¡${fileObjs.length} archivo(s)(s) guardados!`);
     });
 
     async function saveData(projectId, filesToSave = []) {
@@ -477,7 +463,6 @@
       });
     }
 
-    // === ELIMINAR ===
     deleteBtn.addEventListener("click", () => {
       if (!selectedFile || !selectedFileData) return alert("Selecciona un archivo para eliminar.");
       deleteName.textContent = selectedFileData.name;
@@ -499,18 +484,12 @@
     });
     cancelDeleteBtn.addEventListener("click", () => confirmationDialog.style.display = "none");
 
-    // === CERRAR VISOR ===
-    codeClose.addEventListener("click", (e) => { e.stopPropagation(); codeViewer.style.display = "none"; });
-    imageClose.addEventListener("click", (e) => { e.stopPropagation(); imageViewer.style.display = "none"; });
-
-    // === CERRAR CON CLIC FUERA ===
     window.addEventListener("click", e => {
       if (e.target === modal) modal.style.display = "none";
       if (e.target === codeViewer) codeViewer.style.display = "none";
       if (e.target === imageViewer) imageViewer.style.display = "none";
     });
 
-    // === ABRIR PROYECTO ===
     document.querySelectorAll(".ver-proyecto").forEach(link => {
       link.addEventListener("click", e => {
         e.preventDefault();
