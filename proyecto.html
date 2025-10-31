@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Portafolio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <style>
+    body { background-color: #000000; color: #ffffff; margin: 0; font-family: 'Arial', sans-serif; overflow-y: auto; }
+    #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+    .whatsapp-btn { background: linear-gradient(90deg, #25d366, #128c7e); box-shadow: 0 0 10px #25d366; }
+    .whatsapp-btn:hover { background: linear-gradient(90deg, #1eb554, #0f6f5e); box-shadow: 0 0 15px #1eb554; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; }
+    .modal-content { background-color: #2d2d2d; width: 100%; height: 100%; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; position: relative; }
+
+    /* X 100% FUNCIONAL */
+    .close {
+      color: #fff;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      user-select: none;
+      display: inline-block;
+      transition: all 0.2s ease;
+      z-index: 1001;
+    }
+    .close:hover {
+      color: #ff0000;
+      transform: scale(1.1);
+    }
+
+    .file-explorer { background-color: #1e1e1e; border: 1px solid #444; border-radius: 4px; padding: 10px; flex-grow: 1; overflow-y: auto; margin-bottom: 20px; }
+    .file-item { display: flex; align-items: center; margin-bottom: 10px; padding: 5px; background-color: #333; border-radius: 3px; cursor: pointer; position: relative; }
+    .file-item.selected { background-color: #4a90e2; color: white; }
+    .file-item i { margin-right: 10px; width: 20px; text-align: center; }
+    .file-item .preview { position: absolute; top: 100%; left: 0; background: #1e1e1e; border: 1px solid #444; border-radius: 4px; padding: 5px; display: none; z-index: 10; max-width: 200px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+    .file-item:hover .preview { display: block; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: relative; }
+    .delete-btn { padding: 6px 12px; border-radius: 4px; cursor: pointer; color: white; background-color: #e24a4a; margin-right: 3rem; font-size: 0.9rem; }
+    .delete-btn:hover { background-color: #b33d3d; }
+    .upload-area { border: 2px dashed #00ffcc; border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 15px; transition: all 0.3s; cursor: pointer; }
+    .upload-area.dragover { background-color: rgba(0, 255, 204, 0.1); border-color: #00ffcc; box-shadow: 0 0 15px rgba(0, 255, 204, 0.3); }
+    .confirmation-dialog { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #2d2d2d; border: 1px solid #444; border-radius: 4px; padding: 20px; z-index: 1002; box-shadow: 0 0 10px rgba(0,0,0,0.5); text-align: center; width: 300px; }
+    .confirmation-dialog button { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; margin: 10px 5px 0; }
+    .confirmation-dialog #confirm-delete { background-color: #e24a4a; color: white; }
+    .confirmation-dialog #confirm-delete:hover { background-color: #b33d3d; }
+    .confirmation-dialog .cancel-btn { background-color: #666; color: white; }
+    .confirmation-dialog .cancel-btn:hover { background-color: #555; }
+
+    /* VISOR DE CÓDIGO MEJORADO */
+    .code-viewer, .image-viewer {
+      display: none;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%; max-width: 1000px;
+      height: 85%; max-height: 800px;
+      background-color: #1e1e1e;
+      border: 1px solid #444;
+      border-radius: 8px;
+      z-index: 1003;
+      box-shadow: 0 0 30px rgba(0,0,0,0.9);
+      overflow: hidden;
+      flex-direction: column;
+    }
+    .code-viewer-header, .image-viewer-header {
+      background-color: #2d2d2d;
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #444;
+    }
+    .code-viewer-header h3, .image-viewer-header h3 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: #00ffcc;
+      font-weight: bold;
+    }
+    .code-viewer-close, .image-viewer-close {
+      cursor: pointer;
+      font-size: 1.8rem;
+      color: #aaa;
+      transition: color 0.2s;
+    }
+    .code-viewer-close:hover, .image-viewer-close:hover {
+      color: #ff0000;
+    }
+    .code-viewer-content {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .image-viewer-content {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background-color: #111;
+    }
+    .image-viewer-content img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+    pre { margin: 0; }
+    code { display: block; white-space: pre-wrap; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- Navbar -->
+  <nav class="bg-transparent py-4 fixed w-full z-10">
+    <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
+      <div></div>
+      <ul class="flex space-x-6">
+        <li><a href="#inicio" class="text-gray-300 hover:text-teal-400">Inicio</a></li>
+        <li><a href="#sobre-mi" class="text-gray-300 hover:text-teal-400">Sobre Mí</a></li>
+        <li><a href="#proyectos" class="text-gray-300 hover:text-teal-400">Trabajos</a></li>
+        <li><a href="#contacto" class="text-gray-300 hover:text-teal-400">Contacto</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Inicio -->
+  <section id="inicio" class="min-h-screen flex items-start justify-start px-4 pt-20">
+    <div class="text-left">
+      <div class="mt-20 mb-8">
+        <p class="text-6xl font-bold mb-1 leading-tight">Hola,</p>
+        <p class="text-6xl font-bold mb-1 leading-tight">Bienvenidos a</p>
+        <p class="text-6xl font-bold leading-tight">mi portafolio web</p>
+      </div>
+      <img src="https://via.placeholder.com/300x400" class="rounded-full w-48 h-48 mx-auto mb-6 opacity-50">
+      <a href="#proyectos" class="whatsapp-btn text-white px-6 py-3 rounded-full font-semibold inline-flex items-center subir-proyecto">
+        Subir un proyecto
+      </a>
+    </div>
+  </section>
+
+  <!-- Sobre Mí -->
+  <section id="sobre-mi" class="py-20 bg-gray-900">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+      <h2 class="text-3xl font-bold mb-6">Sobre Mí</h2>
+      <p>
+        Soy Allan Mejía, estudiante de Ingeniería en Sistemas apasionado por la tecnología, la programación y la innovación digital. Desde muy joven me ha fascinado cómo un conjunto de líneas de código puede dar vida a ideas y resolver problemas reales.
+      </p>
+    </div>
+  </section>
+
+  <!-- Proyectos -->
+  <section id="proyectos" class="py-20 bg-gray-800">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-3xl font-bold mb-10 text-center">Trabajos</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-gray-700 rounded-lg p-6">
+          <h3 class="text-xl font-semibold">Proyecto 1</h3>
+          <a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="1">Ver Proyecto</a>
+        </div>
+        <div class="bg-gray-700 rounded-lg p-6">
+          <h3 class="text-xl font-semibold">Proyecto 2</h3>
+          <a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="2">Ver Proyecto</a>
+        </div>
+        <div class="bg-gray-700 rounded-lg p-6">
+          <h3 class="text-xl font-semibold">Proyecto 3</h3>
+          <a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="3">Ver Proyecto</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contacto -->
+  <section id="contacto" class="py-20 bg-gray-800">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+      <h2 class="text-3xl font-bold mb-6">Contacto</h2>
+      <div class="bg-gray-700 p-4 rounded-lg inline-block">
+        mi correo: 
+        <a href="mailto:amejiaa10@miumg.edu.gt" class="text-teal-400 hover:underline font-semibold">
+          amejiaa10@miumg.edu.gt
+        </a>
+        <br>
+        <a href="https://wa.me/50437443595" class="text-teal-400 hover:underline" target="_blank">cel: 3744-3595</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODAL -->
+  <div id="proyectos-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">X</span>
+      <div class="header">
+        <h2 id="project-title" class="text-2xl font-bold mb-4"></h2>
+        <div>
+          <button class="delete-btn">Eliminar</button>
+        </div>
+      </div>
+
+      <div class="file-explorer mb-4"></div>
+
+      <div class="upload-area" id="upload-area">
+        <p>Arrastra archivos aquí o haz clic para seleccionar</p>
+        <input type="file" id="file-upload" multiple accept="image/*,.cpp,.h,.c,.py,.js,.java,.html,.css,.php,.rb,.go,.ts,.cs,.swift,.kt,.rs,.sh,.json,.xml,.yaml,.yml,.md,.txt" style="display: none;">
+      </div>
+      <button type="submit" class="whatsapp-btn text-white px-6 py-3 rounded-full font-semibold" id="save-files">
+        Guardar Archivo(s)
+      </button>
+    </div>
+  </div>
+
+  <div id="confirmation-dialog" class="confirmation-dialog">
+    <p>¿Estás seguro de que deseas eliminar <span id="delete-name"></span>?</p>
+    <button id="confirm-delete">Eliminar</button>
+    <button class="cancel-btn" id="cancel-delete">Cancelar</button>
+  </div>
+
+  <!-- VISOR DE CÓDIGO -->
+  <div id="code-viewer" class="code-viewer">
+    <div class="code-viewer-header">
+      <h3 id="code-filename">archivo.cpp</h3>
+      <span class="code-viewer-close">X</span>
+    </div>
+    <div class="code-viewer-content">
+      <pre><code id="code-content" class="language-cpp"></code></pre>
+    </div>
+  </div>
+
+  <!-- VISOR DE IMAGEN -->
+  <div id="image-viewer" class="image-viewer">
+    <div class="image-viewer-header">
+      <h3 id="image-filename">imagen.png</h3>
+      <span class="image-viewer-close">X</span>
+    </div>
+    <div class="image-viewer-content">
+      <img id="image-preview" src="" alt="Vista previa">
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+  <script>
+    // === ELEMENTOS ===
+    const modal = document.getElementById("proyectos-modal");
+    const closeBtn = document.querySelector("#proyectos-modal .close");
+    const projectTitle = document.getElementById("project-title");
+    const fileExplorer = document.querySelector(".file-explorer");
+    const uploadArea = document.getElementById("upload-area");
+    const fileInput = document.getElementById("file-upload");
+    const saveBtn = document.getElementById("save-files");
+    const deleteBtn = document.querySelector(".delete-btn");
+    const confirmationDialog = document.getElementById("confirmation-dialog");
+    const confirmDeleteBtn = document.getElementById("confirm-delete");
+    const cancelDeleteBtn = document.getElementById("cancel-delete");
+    const deleteName = document.getElementById("delete-name");
+
+    const codeViewer = document.getElementById("code-viewer");
+    const imageViewer = document.getElementById("image-viewer");
+    const codeClose = document.querySelector(".code-viewer-close");
+    const imageClose = document.querySelector(".image-viewer-close");
+
+    let selectedFile = null;
+    let selectedFileData = null;
+    let currentProject = null;
+    let db = null;
+    let pendingFiles = [];
+
+    const fileIcons = {
+      '.cpp': { icon: 'fas fa-code', color: '#00599C' },
+      '.h':   { icon: 'fas fa-code', color: '#00599C' },
+      '.c':   { icon: 'fas fa-code', color: '#00599C' },
+      '.py':  { icon: 'fab fa-python', color: '#3776AB' },
+      '.js':  { icon: 'fab fa-js', color: '#F7DF1E' },
+      '.java':{ icon: 'fab fa-java', color: '#007396' },
+      '.html':{ icon: 'fab fa-html5', color: '#E34F26' },
+      '.png': { icon: 'far fa-image', color: '#4CAF50' },
+      '.jpg': { icon: 'far fa-image', color: '#4CAF50' },
+      '.jpeg':{ icon: 'far fa-image', color: '#4CAF50' },
+      '.gif': { icon: 'far fa-image', color: '#4CAF50' },
+      '.webp':{ icon: 'far fa-image', color: '#4CAF50' },
+      default: { icon: 'fas fa-file-code', color: '#00ffcc' }
+    };
+
+    const codeExtensions = ['.cpp', '.h', '.c', '.py', '.js', '.java', '.html', '.css', '.php', '.rb', '.go', '.ts', '.cs', '.swift', '.kt', '.rs', '.sh', '.json', '.xml', '.yaml', '.yml', '.md', '.txt'];
+    const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
+
+    // === X CIERRA EL MODAL ===
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        modal.style.display = "none";
+      });
+    }
+
+    // === IndexedDB ===
+    function initDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open("PortfolioDB", 1);
+        request.onupgradeneeded = e => {
+          db = e.target.result;
+          db.createObjectStore("projects", { keyPath: "projectId" });
+        };
+        request.onsuccess = e => { db = e.target.result; resolve(); };
+        request.onerror = e => reject(e.target.error);
+      });
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function base64ToBlob(base64, type) {
+      const bytes = atob(base64);
+      const array = new Uint8Array(bytes.length);
+      for (let i = 0; i < bytes.length; i++) array[i] = bytes.charCodeAt(i);
+      return new Blob([array], { type });
+    }
+
+    function getFileIcon(name) {
+      const ext = name.includes('.') ? name.substring(name.lastIndexOf('.')) : '';
+      return fileIcons[ext] || fileIcons.default;
+    }
+
+    // === VISOR DE CÓDIGO MEJORADO ===
+    function showCode(file) {
+      const blob = base64ToBlob(file.content, file.type);
+      const reader = new FileReader();
+      reader.onload = e => {
+        const text = e.target.result;
+        const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+        const langMap = {
+          '.cpp': 'cpp', '.h': 'cpp', '.c': 'c', '.py': 'python', '.js': 'javascript',
+          '.java': 'java', '.html': 'markup', '.css': 'css', '.php': 'php',
+          '.rb': 'ruby', '.go': 'go', '.ts': 'typescript', '.cs': 'csharp',
+          '.swift': 'swift', '.kt': 'kotlin', '.rs': 'rust', '.sh': 'bash',
+          '.json': 'json', '.xml': 'xml', '.yaml': 'yaml', '.yml': 'yaml',
+          '.md': 'markdown', '.txt': 'plaintext'
+        };
+        const lang = langMap[ext] || 'plaintext';
+
+        document.getElementById("code-filename").textContent = file.name;
+        const codeEl = document.getElementById("code-content");
+        codeEl.className = `language-${lang}`;
+        codeEl.textContent = text;
+
+        codeViewer.style.display = 'flex';
+        setTimeout(() => Prism.highlightAll(), 10); // Forzar resaltado
+      };
+      reader.readAsText(blob);
+    }
+
+    function showImage(file) {
+      const url = `data:${file.type};base64,${file.content}`;
+      document.getElementById("image-filename").textContent = file.name;
+      document.getElementById("image-preview").src = url;
+      imageViewer.style.display = 'flex';
+    }
+
+    // === CARGAR ARCHIVOS GUARDADOS ===
+    async function loadSavedData(projectNumber) {
+      return new Promise((resolve, reject) => {
+        fileExplorer.innerHTML = '';
+        const tx = db.transaction(["projects"], "readonly");
+        const store = tx.objectStore("projects");
+        const req = store.get(projectNumber);
+        req.onsuccess = () => {
+          const data = req.result || { projectId: projectNumber, files: [] };
+          data.files.forEach(file => {
+            const info = getFileIcon(file.name);
+            const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+            const el = document.createElement("div");
+            el.className = "file-item";
+            el.innerHTML = `<i class="${info.icon}" style="color:${info.color}"></i><span>${file.name}</span>`;
+            
+            // Preview de imagen
+            if (imageExtensions.includes(ext)) {
+              const preview = document.createElement("div");
+              preview.className = "preview";
+              const img = document.createElement("img");
+              img.src = `data:${file.type};base64,${file.content}`;
+              img.style.maxWidth = "100%";
+              preview.appendChild(img);
+              el.appendChild(preview);
+            }
+
+            // Seleccionar archivo
+            el.addEventListener("click", (e) => {
+              e.stopPropagation();
+              if (selectedFile) selectedFile.classList.remove("selected");
+              selectedFile = el;
+              selectedFileData = file;
+              selectedFile.classList.add("selected");
+            });
+
+            // DOBLE CLIC → ABRIR VISOR
+            el.addEventListener("dblclick", (e) => {
+              e.stopPropagation();
+              if (codeExtensions.includes(ext)) {
+                showCode(file);
+              } else if (imageExtensions.includes(ext)) {
+                showImage(file);
+              }
+            });
+
+            fileExplorer.appendChild(el);
+          });
+          resolve();
+        };
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    // === DRAG & DROP ===
+    ['dragenter', 'dragover'].forEach(event => {
+      uploadArea.addEventListener(event, e => { e.preventDefault(); e.stopPropagation(); uploadArea.classList.add('dragover'); });
+    });
+    ['dragleave', 'drop'].forEach(event => {
+      uploadArea.addEventListener(event, e => { e.preventDefault(); e.stopPropagation(); uploadArea.classList.remove('dragover'); });
+    });
+    uploadArea.addEventListener('drop', e => {
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        pendingFiles = Array.from(files);
+        uploadArea.innerHTML = `<p>${pendingFiles.length} archivo(s) listos para guardar</p>`;
+      }
+    });
+    uploadArea.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        pendingFiles = Array.from(fileInput.files);
+        uploadArea.innerHTML = `<p>${pendingFiles.length} archivo(s) seleccionados</p>`;
+      }
+    });
+
+    // === GUARDAR ARCHIVOS ===
+    saveBtn.addEventListener('click', async () => {
+      if (pendingFiles.length === 0) return alert("Selecciona archivos primero.");
+      const fileObjs = await Promise.all(pendingFiles.map(async f => ({
+        name: f.name, type: f.type, content: await fileToBase64(f)
+      })));
+      await saveData(currentProject, fileObjs);
+      await loadSavedData(currentProject);
+      pendingFiles = [];
+      uploadArea.innerHTML = `<p>Arrastra archivos aquí o haz clic para seleccionar</p>`;
+      alert(`¡${fileObjs.length} archivo(s) guardados!`);
+    });
+
+    async function saveData(projectId, filesToSave = []) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(["projects"], "readwrite");
+        const store = tx.objectStore("projects");
+        const getReq = store.get(projectId);
+        getReq.onsuccess = () => {
+          let data = getReq.result || { projectId: projectId, files: [] };
+          filesToSave.forEach(f => {
+            if (!data.files.some(x => x.name === f.name)) data.files.push(f);
+          });
+          const putReq = store.put(data);
+          putReq.onsuccess = () => resolve(data);
+          putReq.onerror = () => reject(putReq.error);
+        };
+        getReq.onerror = () => reject(getReq.error);
+      });
+    }
+
+    // === ELIMINAR ===
+    deleteBtn.addEventListener("click", () => {
+      if (!selectedFile || !selectedFileData) return alert("Selecciona un archivo para eliminar.");
+      deleteName.textContent = selectedFileData.name;
+      confirmationDialog.style.display = "block";
+    });
+    confirmDeleteBtn.addEventListener("click", async () => {
+      const tx = db.transaction(["projects"], "readwrite");
+      const store = tx.objectStore("projects");
+      const req = store.get(currentProject);
+      req.onsuccess = () => {
+        const data = req.result;
+        data.files = data.files.filter(f => f.name !== selectedFileData.name);
+        store.put(data);
+        selectedFile.remove();
+        selectedFile = null;
+        selectedFileData = null;
+        confirmationDialog.style.display = "none";
+      };
+    });
+    cancelDeleteBtn.addEventListener("click", () => confirmationDialog.style.display = "none");
+
+    // === CERRAR VISOR ===
+    codeClose.addEventListener("click", (e) => { e.stopPropagation(); codeViewer.style.display = "none"; });
+    imageClose.addEventListener("click", (e) => { e.stopPropagation(); imageViewer.style.display = "none"; });
+
+    // === CERRAR CON CLIC FUERA ===
+    window.addEventListener("click", e => {
+      if (e.target === modal) modal.style.display = "none";
+      if (e.target === codeViewer) codeViewer.style.display = "none";
+      if (e.target === imageViewer) imageViewer.style.display = "none";
+    });
+
+    // === ABRIR PROYECTO ===
+    document.querySelectorAll(".ver-proyecto").forEach(link => {
+      link.addEventListener("click", e => {
+        e.preventDefault();
+        currentProject = link.dataset.project;
+        projectTitle.textContent = `Proyecto ${currentProject}`;
+        modal.style.display = "block";
+        loadSavedData(currentProject);
+      });
+    });
+
+    document.querySelector(".subir-proyecto").addEventListener("click", e => {
+      e.preventDefault();
+      document.querySelector("#proyectos").scrollIntoView({ behavior: 'smooth' });
+      currentProject = "1";
+      projectTitle.textContent = `Proyecto 1`;
+      modal.style.display = "block";
+      loadSavedData(currentProject);
+    });
+
+    // === FONDO ANIMADO ===
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = (Math.random() - 0.5) * 0.5;
+        this.radius = 2;
+      }
+      update() {
+        this.x += this.vx; this.y += this.vy;
+        if (this.x > canvas.width) this.x = 0;
+        if (this.x < 0) this.x = canvas.width;
+        if (this.y > canvas.height) this.y = 0;
+        if (this.y < 0) this.y = canvas.height;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0, 255, 255, 0.8)';
+        ctx.fill();
+      }
+    }
+
+    const particles = Array.from({ length: 100 }, () => new Particle());
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 100) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(0, 255, 255, ${1 - dist / 100})`;
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    initDB().catch(console.error);
+  </script>
+</body>
+</html>
