@@ -33,8 +33,6 @@
     .file-item { display: flex; align-items: center; margin-bottom: 10px; padding: 5px; background-color: #333; border-radius: 3px; cursor: pointer; position: relative; }
     .file-item.selected { background-color: #4a90e2; color: white; }
     .file-item i { margin-right: 10px; width: 20px; text-align: center; }
-    .file-item .preview { position: absolute; top: 100%; left: 0; background: #1e1e1e; border: 1px solid #444; border-radius: 4px; padding: 5px; display: none; z-index: 10; max-width: 200px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
-    .file-item:hover .preview { display: block; }
 
     .header {
       display: flex;
@@ -183,6 +181,7 @@
       <span class="close-text">Cerrar</span>
       <div class="header">
         <h2 id="project-title" class="text-2xl font-bold mb-4"></h2>
+        <!-- BOTÓN ELIMINAR ELIMINADO -->
       </div>
       <div class="file-explorer mb-4"></div>
       <div class="upload-area" id="upload-area">
@@ -246,7 +245,6 @@
     const imageClose = document.querySelector("#image-viewer .close-text");
 
     let selectedFile = null;
-    let selectedFileData = null;
     let currentProject = null;
     let db = null;
     let pendingFiles = [];
@@ -268,7 +266,6 @@
     };
 
     const codeExtensions = ['.cpp', '.h', '.c', '.py', '.js', '.java', '.html', '.css', '.php', '.rb', '.go', '.ts', '.cs', '.swift', '.kt', '.rs', '.sh', '.json', '.xml', '.yaml', '.yml', '.md', '.txt'];
-    const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
 
     modalClose.addEventListener("click", () => modal.style.display = "none");
     codeClose.addEventListener("click", () => codeViewer.style.display = "none");
@@ -286,20 +283,13 @@
       });
     }
 
-    function base64ToBlob(base64, type) {
-      const bytes = atob(base64);
-      const array = new Uint8Array(bytes.length);
-      for (let i = 0; i < bytes.length; i++) array[i] = bytes.charCodeAt(i);
-      return new Blob([array], { type });
-    }
-
     function getFileIcon(name) {
       const ext = name.includes('.') ? name.substring(name.lastIndexOf('.')) : '';
       return fileIcons[ext] || fileIcons.default;
     }
 
     function showCode(file) {
-      const blob = base64ToBlob(file.content, file.type);
+      const blob = new Blob([atob(file.content)], { type: file.type });
       const reader = new FileReader();
       reader.onload = e => {
         const text = e.target.result;
@@ -333,7 +323,6 @@
         const req = store.get(projectNumber);
         req.onsuccess = () => {
           const data = req.result || { projectId: projectNumber, files: [] };
-          // ORDEN EXACTO: MANTENER EL ORDEN DEL ARRAY
           data.files.forEach(file => {
             const info = getFileIcon(file.name);
             const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
@@ -345,7 +334,6 @@
               e.stopPropagation();
               if (selectedFile) selectedFile.classList.remove("selected");
               selectedFile = el;
-              selectedFileData = file;
               selectedFile.classList.add("selected");
             });
 
@@ -404,7 +392,7 @@
           let data = getReq.result || { projectId: projectId, files: [] };
           filesToSave.forEach(f => {
             if (!data.files.some(x => x.name === f.name)) {
-              data.files.push(f); // MANTIENE ORDEN DE INSERCIÓN
+              data.files.push(f);
             }
           });
           const putReq = store.put(data);
