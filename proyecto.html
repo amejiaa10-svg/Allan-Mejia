@@ -546,36 +546,8 @@
       canvas.height = window.innerHeight;
     });
 
-    // === ARCHIVOS PREDEFINIDOS (100% FUNCIONAL) ===
+    // === ARCHIVOS PREDEFINIDOS (DUPLICADO ELIMINADO) ===
     const predefinedFiles = [
-      { project: "1", name: "primer ejercicio while y do-while.cpp", content: `#include <iostream>
-using namespace std;
-
-int main() {
-    int da = 365, dm = 30, dms = 7, diasIngresados;
-
-    while (true) {
-        cout << "Ingrese el numero de dias: ";
-        cin >> diasIngresados;
-
-        while (diasIngresados <= 0) {
-            cout << "Error: el numero de dias debe ser mayor que 0.\\n";
-            cout << "Ingrese nuevamente el numero de dias: ";
-            cin >> diasIngresados;
-        }
-
-        int a = diasIngresados / da;
-        int resto = diasIngresados % da;
-        int meses = resto / dm;
-        resto %= dm;
-        int semanas = resto / dms;
-        int dias = resto % dms;
-
-        cout << "\\nEl total de " << diasIngresados << " dias es:\\n";
-        cout << a << " anios\\n" << meses << " meses\\n" << semanas << " semanas\\n" << dias << " dias\\n";
-    }
-    return 0;
-}` },
       { project: "1", name: "do-while.cpp", content: `#include <iostream>
 using namespace std;
 
