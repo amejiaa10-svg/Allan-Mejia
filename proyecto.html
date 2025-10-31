@@ -15,7 +15,6 @@
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; }
     .modal-content { background-color: #2d2d2d; width: 100%; height: 100%; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; position: relative; }
 
-    /* CERRAR: SOLO TEXTO */
     .close-text {
       position: absolute;
       top: 15px;
@@ -28,9 +27,7 @@
       font-size: 1.1rem;
       text-decoration: underline;
     }
-    .close-text:hover {
-      color: #ff6b6b;
-    }
+    .close-text:hover { color: #ff6b6b; }
 
     .file-explorer { background-color: #1e1e1e; border: 1px solid #444; border-radius: 4px; padding: 10px; flex-grow: 1; overflow-y: auto; margin-bottom: 20px; }
     .file-item { display: flex; align-items: center; margin-bottom: 10px; padding: 5px; background-color: #333; border-radius: 3px; cursor: pointer; position: relative; }
@@ -39,7 +36,6 @@
     .file-item .preview { position: absolute; top: 100%; left: 0; background: #1e1e1e; border: 1px solid #444; border-radius: 4px; padding: 5px; display: none; z-index: 10; max-width: 200px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
     .file-item:hover .preview { display: block; }
 
-    /* HEADER: ELIMINAR MÁS A LA IZQUIERDA */
     .header {
       display: flex;
       justify-content: space-between;
@@ -170,36 +166,12 @@
     <div class="max-w-6xl mx-auto px-4">
       <h2 class="text-3xl font-bold mb-10 text-center">Trabajos</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <!-- Proyecto 1 -->
-        <div class="bg-gray-700 rounded-lg p-6">
-          <h3 class="text-xl font-semibold">Proyecto 1</h3>
-          <a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="1">Ver Proyecto</a>
-        </div>
-        <!-- Proyecto 2 -->
-        <div class="bg-gray-700 rounded-lg p-6">
-          <h3 class="text-xl font-semibold">Proyecto 2</h3>
-          <a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="2">Ver Proyecto</a>
-        </div>
-        <!-- Proyecto 3 -->
-        <div class="bg-gray-700 rounded-lg p-6">
-          <h3 class="text-xl font-semibold">Proyecto 3</h3>
-          <a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="3">Ver Proyecto</a>
-        </div>
-        <!-- Proyecto 4 -->
-        <div class="bg-gray-700 rounded-lg p-6">
-          <h3 class="text-xl font-semibold">Proyecto 4</h3>
-          <a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="4">Ver Proyecto</a>
-        </div>
-        <!-- Proyecto 5 -->
-        <div class="bg-gray-700 rounded-lg p-6">
-          <h3 class="text-xl font-semibold">Proyecto 5</h3>
-          <a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="5">Ver Proyecto</a>
-        </div>
-        <!-- Proyecto 6 -->
-        <div class="bg-gray-700 rounded-lg p-6">
-          <h3 class="text-xl font-semibold">Proyecto 6</h3>
-          <a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="6">Ver Proyecto</a>
-        </div>
+        <div class="bg-gray-700 rounded-lg p-6"><h3 class="text-xl font-semibold">Proyecto 1</h3><a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="1">Ver Proyecto</a></div>
+        <div class="bg-gray-700 rounded-lg p-6"><h3 class="text-xl font-semibold">Proyecto 2</h3><a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="2">Ver Proyecto</a></div>
+        <div class="bg-gray-700 rounded-lg p-6"><h3 class="text-xl font-semibold">Proyecto 3</h3><a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="3">Ver Proyecto</a></div>
+        <div class="bg-gray-700 rounded-lg p-6"><h3 class="text-xl font-semibold">Proyecto 4</h3><a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="4">Ver Proyecto</a></div>
+        <div class="bg-gray-700 rounded-lg p-6"><h3 class="text-xl font-semibold">Proyecto 5</h3><a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="5">Ver Proyecto</a></div>
+        <div class="bg-gray-700 rounded-lg p-6"><h3 class="text-xl font-semibold">Proyecto 6</h3><a href="#" class="text-teal-400 hover:underline ver-proyecto" data-project="6">Ver Proyecto</a></div>
       </div>
     </div>
   </section>
@@ -227,9 +199,7 @@
         <h2 id="project-title" class="text-2xl font-bold mb-4"></h2>
         <button class="delete-btn">Eliminar</button>
       </div>
-
       <div class="file-explorer mb-4"></div>
-
       <div class="upload-area" id="upload-area">
         <p>Arrastra archivos aquí o haz clic para seleccionar</p>
         <input type="file" id="file-upload" multiple accept="image/*,.cpp,.h,.c,.py,.js,.java,.html,.css,.php,.rb,.go,.ts,.cs,.swift,.kt,.rs,.sh,.json,.xml,.yaml,.yml,.md,.txt" style="display: none;">
@@ -272,6 +242,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 
   <script>
+    // === FUNCIÓN fileToBase64 (AL INICIO) ===
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
     // === ELEMENTOS ===
     const modal = document.getElementById("proyectos-modal");
     const modalClose = document.querySelector("#proyectos-modal .close-text");
@@ -316,12 +296,10 @@
     const codeExtensions = ['.cpp', '.h', '.c', '.py', '.js', '.java', '.html', '.css', '.php', '.rb', '.go', '.ts', '.cs', '.swift', '.kt', '.rs', '.sh', '.json', '.xml', '.yaml', '.yml', '.md', '.txt'];
     const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
 
-    // === CERRAR CON "Cerrar" (texto) ===
     modalClose.addEventListener("click", () => modal.style.display = "none");
     codeClose.addEventListener("click", () => codeViewer.style.display = "none");
     imageClose.addEventListener("click", () => imageViewer.style.display = "none");
 
-    // === IndexedDB ===
     function initDB() {
       return new Promise((resolve, reject) => {
         const request = indexedDB.open("PortfolioDB", 1);
@@ -331,15 +309,6 @@
         };
         request.onsuccess = e => { db = e.target.result; resolve(); };
         request.onerror = e => reject(e.target.error);
-      });
-    }
-
-    function fileToBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
       });
     }
 
@@ -382,13 +351,6 @@
       reader.readAsText(blob);
     }
 
-    function showImage(file) {
-      const url = `data:${file.type};base64,${file.content}`;
-      document.getElementById("image-filename").textContent = file.name;
-      document.getElementById("image-preview").src = url;
-      imageViewer.style.display = 'flex';
-    }
-
     async function loadSavedData(projectNumber) {
       return new Promise((resolve, reject) => {
         fileExplorer.innerHTML = '';
@@ -404,16 +366,6 @@
             el.className = "file-item";
             el.innerHTML = `<i class="${info.icon}" style="color:${info.color}"></i><span>${file.name}</span>`;
             
-            if (imageExtensions.includes(ext)) {
-              const preview = document.createElement("div");
-              preview.className = "preview";
-              const img = document.createElement("img");
-              img.src = `data:${file.type};base64,${file.content}`;
-              img.style.maxWidth = "100%";
-              preview.appendChild(img);
-              el.appendChild(preview);
-            }
-
             el.addEventListener("click", (e) => {
               e.stopPropagation();
               if (selectedFile) selectedFile.classList.remove("selected");
@@ -425,7 +377,6 @@
             el.addEventListener("dblclick", (e) => {
               e.stopPropagation();
               if (codeExtensions.includes(ext)) showCode(file);
-              else if (imageExtensions.includes(ext)) showImage(file);
             });
 
             fileExplorer.appendChild(el);
@@ -514,7 +465,6 @@
       if (e.target === imageViewer) imageViewer.style.display = "none";
     });
 
-    // === ABRIR CUALQUIER PROYECTO (1 a 6) ===
     document.querySelectorAll(".ver-proyecto").forEach(link => {
       link.addEventListener("click", e => {
         e.preventDefault();
@@ -591,7 +541,180 @@
       canvas.height = window.innerHeight;
     });
 
-    initDB().catch(console.error);
+    // === ARCHIVOS PREDEFINIDOS (100% FUNCIONAL) ===
+    const predefinedFiles = [
+      { project: "1", name: "primer ejercicio while y do-while.cpp", content: `#include <iostream>
+using namespace std;
+
+int main() {
+    int da = 365, dm = 30, dms = 7, diasIngresados;
+
+    while (true) {
+        cout << "Ingrese el numero de dias: ";
+        cin >> diasIngresados;
+
+        while (diasIngresados <= 0) {
+            cout << "Error: el numero de dias debe ser mayor que 0.\\n";
+            cout << "Ingrese nuevamente el numero de dias: ";
+            cin >> diasIngresados;
+        }
+
+        int a = diasIngresados / da;
+        int resto = diasIngresados % da;
+        int meses = resto / dm;
+        resto %= dm;
+        int semanas = resto / dms;
+        int dias = resto % dms;
+
+        cout << "\\nEl total de " << diasIngresados << " dias es:\\n";
+        cout << a << " anios\\n" << meses << " meses\\n" << semanas << " semanas\\n" << dias << " dias\\n";
+    }
+    return 0;
+}` },
+      { project: "1", name: "do-while.cpp", content: `#include <iostream>
+using namespace std;
+
+int main() {
+    int da = 365, dm = 30, dms = 7, diasIngresados;
+
+    do {
+        cout << "Ingrese el numero de dias: ";
+        cin >> diasIngresados;
+
+        while (diasIngresados <= 0) {
+            cout << "Error: el numero de dias debe ser mayor que 0.\\n";
+            cout << "Ingrese nuevamente el numero de dias: ";
+            cin >> diasIngresados;
+        }
+
+        int a = diasIngresados / da;
+        int resto = diasIngresados % da;
+        int meses = resto / dm;
+        resto %= dm;
+        int semanas = resto / dms;
+        int dias = resto % dms;
+
+        cout << "\\nEl total de " << diasIngresados << " dias es:\\n";
+        cout << a << " anios\\n" << meses << " meses\\n" << semanas << " semanas\\n" << dias << " dias\\n";
+    } while (true);
+
+    return 0;
+}` },
+      { project: "2", name: "ConsoleApplication1.cpp", content: `#include <iostream>
+using namespace std;
+
+int main() {
+    for (int i = 1; i <= 100; i++) {
+        if (i % 3 == 0 && i % 5 == 0) cout << "fizzbuzz" << endl;
+        else if (i % 3 == 0) cout << "fizz" << endl;
+        else if (i % 5 == 0) cout << "buzz" << endl;
+        else cout << i << endl;
+    }
+    return 0;
+}` },
+      { project: "3", name: "anagrama.cpp", content: `#include <iostream>
+using namespace std;
+
+bool sonAnagramas(string p1, string p2) {
+    if (p1.length() != p2.length() || p1 == p2) return false;
+    bool usada[100] = {false};
+    for (char c : p1) {
+        bool ok = false;
+        for (int j = 0; j < p2.length(); j++) {
+            if (c == p2[j] && !usada[j]) { usada[j] = true; ok = true; break; }
+        }
+        if (!ok) return false;
+    }
+    return true;
+}
+
+int main() {
+    string p1, p2;
+    cout << "Ingrese la primera palabra: "; cin >> p1;
+    cout << "Ingrese la segunda palabra: "; cin >> p2;
+    cout << (sonAnagramas(p1, p2) ? "Las palabras son anagramas." : "Las palabras NO son anagramas.") << endl;
+    return 0;
+}` },
+      { project: "4", name: "polindromos.cpp", content: `#include <iostream>
+#include <string>
+#include <algorithm>
+#include <cctype>
+using namespace std;
+
+string limpiar(string s) {
+    string r = "";
+    for (char c : s) {
+        c = tolower(c);
+        if (c == 'á') c = 'a'; else if (c == 'é') c = 'e'; else if (c == 'í') c = 'i'; else if (c == 'ó') c = 'o'; else if (c == 'ú') c = 'u';
+        if (isalnum(c)) r += c;
+    }
+    return r;
+}
+
+int main() {
+    string texto;
+    cout << "Ingrese un texto: ";
+    getline(cin, texto);
+    string limpio = limpiar(texto);
+    string rev = limpio; reverse(rev.begin(), rev.end());
+    cout << (limpio == rev ? "Es un palindromo." : "No es un palindromo.") << endl;
+    return 0;
+}` },
+      { project: "5", name: "numero a binario.cpp", content: `#include <iostream>
+using namespace std;
+
+int main() {
+    int n;
+    cout << "Ingrese un numero decimal: "; cin >> n;
+    if (n == 0) { cout << "El numero binario es: 0" << endl; return 0; }
+    int bin[32], i = 0;
+    while (n > 0) { bin[i++] = n % 2; n /= 2; }
+    cout << "El numero binario es: ";
+    for (int j = i - 1; j >= 0; j--) cout << bin[j];
+    cout << endl;
+    return 0;
+}` },
+      { project: "6", name: "MCD.cpp", content: `#include <iostream>
+using namespace std;
+
+int mcd(int a, int b) {
+    while (b != 0) { int r = a % b; a = b; b = r; }
+    return a;
+}
+
+int main() {
+    int a, b;
+    cout << "Ingrese el primer numero: "; cin >> a;
+    cout << "Ingrese el segundo numero: "; cin >> b;
+    cout << "El MCD de " << a << " y " << b << " es: " << mcd(a, b) << endl;
+    return 0;
+}` }
+    ];
+
+    async function seedPredefinedFiles() {
+      for (const file of predefinedFiles) {
+        const blob = new Blob([file.content], { type: 'text/plain' });
+        const fileObj = new File([blob], file.name, { type: 'text/plain' });
+        const base64 = await fileToBase64(fileObj);
+
+        const tx = db.transaction(["projects"], "readwrite");
+        const store = tx.objectStore("projects");
+        const getReq = store.get(file.project);
+        getReq.onsuccess = () => {
+          let data = getReq.result || { projectId: file.project, files: [] };
+          if (!data.files.some(f => f.name === file.name)) {
+            data.files.push({ name: file.name, type: 'text/plain', content: base64 });
+            store.put(data);
+          }
+        };
+      }
+    }
+
+    // === INICIAR TODO ===
+    (async () => {
+      await initDB();
+      await seedPredefinedFiles();
+    })();
   </script>
 </body>
 </html>
